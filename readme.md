@@ -6,11 +6,11 @@ SacriCat is a socket client/server library to help hackers in CTF both of side (
 
 ![Creative Common BY-NC](https://github.com/Sacriyana/SacriCat/raw/master/license.png)
 
-# Installation
+### Installation
 
-This librairy only use default python import. So no requirement.
+The only requirement is Python3.
 
-Tu use it, you can copy sacricat folder into your projet.
+To use it, you can copy sacricat folder into your projet.
 
 The setup.py creation is on the TODO list :D.
 
