@@ -87,9 +87,12 @@ class SimpleServerThread(AbstractServerThread):
     def play(self):
         self.challenge.turn = 0
         while not self.kill:
-            if self.challenge.turn == self.challenge.nbTurn:
+            if self.challenge.turn >= self.challenge.nbTurn:
                 self.sendWin()
                 return True
+            if self.challenge.turn < 0:
+                self.sendLose()
+                return False
             self.challenge.initTurn()
             self._log(repr(self.challenge),level=logging.CHALLENGE)
             self.send(self.challenge.challenge, True)

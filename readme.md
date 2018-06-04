@@ -2,6 +2,19 @@
 
 SacriCat is a socket client/server library to help hackers in CTF both of side (creator or gamer)
 
+### License
+
+Creative Common BY-NC
+![alt text](https://raw.githubusercontent.com/Saciryana/SacriCat/branch/master/license.png)
+
+# Installation
+
+This librairy only use default python import. So no requirement.
+
+Tu use it, you can copy sacricat folder into your projet.
+
+The setup.py creation is on the TODO list :D.
+
 # The client
 
 To connect to the server you have to call the sacricat.client.Server with 2 required fields:
@@ -57,7 +70,9 @@ You have 3 optional fields :
 ### Example
 
 ```python
-server = Server("127.0.0.1", 4242, MyChallenge, prompt=">>> ", logLevel=logging.VERBOSE)
+from sacricat.server import Server, logging
+
+server = Server("127.0.0.1", 4242, MyChallenge, prompt=">>> ", logLevel=logging.BASIC)
 ```
 
 ## Challenge class

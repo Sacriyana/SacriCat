@@ -30,6 +30,9 @@ class Server(Core):
         while self.prompt not in serverRecv:
             try:
                 recv = super().recv()
+                if recv == '':
+                    self._log("recv is empty", level=logging.INFO)
+                    break
                 serverRecv += recv
             except Exception as e:
                 self._log(str(e), level=logging.INFO)
