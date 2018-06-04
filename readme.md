@@ -4,8 +4,7 @@ SacriCat is a socket client/server library to help hackers in CTF both of side (
 
 ### License
 
-Creative Common BY-NC
-![alt text](https://raw.githubusercontent.com/Saciryana/SacriCat/branch/master/license.png)
+![Creative Common BY-NC](https://github.com/Sacriyana/SacriCat/raw/master/license.png)
 
 # Installation
 
