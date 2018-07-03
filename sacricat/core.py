@@ -33,7 +33,8 @@ class Core:
         self._log(log, heading=False)
 
     def recv(self, length=2048):
-        r = self.socket.recv(length).decode()
+        r = self.socket.recv(length)
+        r = r.decode()
         self._log("Received - "+repr(r.strip()), level=logging.RECV)
         return r
 
@@ -48,7 +49,7 @@ class Core:
         if sendPrompt:
             msg += '\n'+self.prompt
         try:
-            self.socket.send(msg.encode())
+            self.socket.sendall(msg.encode())
         except socket.error as e:
             self._log("Socket Error - "+str(e), level=logging.ERROR)
             return False

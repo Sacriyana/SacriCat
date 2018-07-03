@@ -12,7 +12,7 @@ The only requirement is Python3.
 
 To use it, you can copy sacricat folder into your projet.
 
-The setup.py creation is on the TODO list :D.
+You can install with `python setup.py install`. It's better with a virtualenv.
 
 # The client
 

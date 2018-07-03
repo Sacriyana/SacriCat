@@ -8,6 +8,8 @@ import threading
 import time
 from sacricat.log import logging
 
+__all__ = ['Server','Challenge','logging']
+
 class Challenge:
     rules = "Override it."
     win = "Override it."
@@ -48,7 +50,7 @@ class AbstractServerThread(Core, threading.Thread):
         super().__init__(*args, **kw)
         self.challenge = self.ChallengeClass()
         self.socket = socket
-        self.socket.settimeout(self.challenge.authorizedTime)
+        self.socket.settimeout(self.challenge.authorizedTime+60)
         self.kill = False
         self._logConnected('Thread created')
 
