@@ -6,6 +6,7 @@ from sacricat.log import logging
 
 class Core:
     """ Abstract class to define core functions"""
+    length_bytes = 128
     def __init__(self, ip, port, prompt, logLevel=logging.BASIC):
         self.ip = ip
         self.port = port
@@ -32,16 +33,20 @@ class Core:
             log += " - " + msg
         self._log(log, heading=False)
 
-    def recv(self, length=2048):
-        r = self.socket.recv(length)
-        r = r.decode()
-        self._log("Received - "+repr(r.strip()), level=logging.RECV)
-        return r
-
     def close(self):
         res = self.socket.close()
         self._logDisconnected()
         return res
+
+    def recv(self, length=None):
+        if not length:
+            length = self.length_bytes
+        if length < 1:
+            raise Exception("Length < 1")
+        r = self.socket.recv(length)
+        r = r.decode()
+        self._log("Received - "+repr(r), level=logging.RECV)
+        return r
 
     def send(self, msg, sendPrompt=False):
         if type(msg) != 'str':

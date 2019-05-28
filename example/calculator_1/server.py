@@ -17,7 +17,7 @@ class MyChallenge(Challenge):
 
     (press touch to start)
     """
-    win = "Congrats ! flag:sacricat\{win_for_example_1\}"
+    win = "Congrats ! flag:sacricat{win_for_example_1}"
     lose = "Sorry, you missed the challenge. Try again :)"
     nbTurn = 10
     authorizedTime = 2
