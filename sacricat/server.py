@@ -6,6 +6,7 @@ from .core import Core
 import socket
 import threading
 import time
+import os
 from sacricat.log import logging
 
 __all__ = ['Server','Challenge','logging']
@@ -43,28 +44,16 @@ class Challenge:
 
 
 class AbstractServerThread(Core, threading.Thread):
-    ChallengeClass = None
-
     def __init__(self, socket, *args, **kw ):
         threading.Thread.__init__(self)
         super().__init__(*args, **kw)
-        self.challenge = self.ChallengeClass()
         self.socket = socket
-        self.socket.settimeout(self.challenge.authorizedTime+60)
+        self.socket.settimeout(120)
         self.kill = False
         self._logConnected('Thread created')
 
     def stop(self):
         self.kill = True
-
-    def sendRules(self):
-        self.send(self.challenge.rules)
-
-    def sendWin(self):
-        self.send(self.challenge.win)
-
-    def sendLose(self):
-        self.send(self.challenge.lose)
 
     def send(self, msg, sendPrompt=False):
         if not self.kill:
@@ -85,6 +74,17 @@ class AbstractServerThread(Core, threading.Thread):
 class SimpleServerThread(AbstractServerThread):
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
+        self.challenge = self.ChallengeClass()
+        self.socker.settimeout(self.challenge.authorizedTime + 10)
+
+    def sendRules(self):
+        self.send(self.challenge.rules)
+
+    def sendWin(self):
+        self.send(self.challenge.win)
+
+    def sendLose(self):
+        self.send(self.challenge.lose)
 
     def play(self):
         self.challenge.turn = 0
@@ -125,16 +125,20 @@ class SimpleServerThread(AbstractServerThread):
 
 class Server:
     """ A Python server class for programming challenges inside CTFs"""
-    def __init__(self, ip, port, ChallengeClass, prompt=">>> ", logLevel=logging.BASIC, ServerThreadClass=SimpleServerThread,):
+    def __init__(self, ip, port, ChallengeClass = None, prompt=">>> ", logLevel=logging.BASIC, ServerThreadClass=SimpleServerThread,recv_bytes=False):
         self.ip = ip
         self.port = port
         self.prompt = prompt
-        ServerThreadClass.ChallengeClass = ChallengeClass
+        if ChallengeClass is not None :
+            ServerThreadClass.ChallengeClass = ChallengeClass
         self.ServerThreadClass = ServerThreadClass
         self.server = None
         self.logLevel = logLevel
         self.logger = logging.getLogger()
         self.logger.setLevel(self.logLevel)
+        self.recv_bytes = recv_bytes
+        ServerThreadClass.recv_bytes = recv_bytes
+        self.thread = []
 
     def _log(self, msg, level=logging.BASIC):
         self.logger.log(level, msg)
@@ -146,7 +150,7 @@ class Server:
         self._log("[*] Server launched - %s:%s" % (self.ip, self.port))
 
         while True:
-            self.server.listen(10)
+            self.server.listen(50)
             (clientSocket, (ip, port)) = self.server.accept()
             newThread = self.ServerThreadClass(clientSocket, ip, port, self.prompt, self.logLevel)
             newThread.start()
