@@ -17,6 +17,93 @@ class Server(Core):
         self.socket.settimeout(timeout)
         self._logConnected()
         self.recv_bytes = recv_bytes
+        self.buffer = None
+
+    def _initRecv(data, recv_bytes, encoding):
+        serverRecv = ''
+        if recv_bytes:
+            serverRecv = b''
+            if type(data) == str:
+                data = data.encode(encoding)
+            if self.buffer :
+                self._log("Insert existing data in buffer :" + str(self.buffer), level=logging.RECV)
+                if type(self.buffer) == str:
+                    serverRecv = self.buffer.encode(encoding)
+                else:
+                    serverRecv = self.buffer
+        else:
+            if type(data) == bytes:
+                data = data.decode(encoding)
+            if self.buffer and type(self.buffer) == bytes:
+                self._log("Insert existing data in buffer :" + str(self.buffer), level=logging.RECV)
+                if type(self.buffer) == bytes:
+                    serverRecv = self.buffer.decode(encoding)
+                else:
+                    serverRecv = self.buffer
+
+        return (data, serverRecv)
+
+    def recv(self, length, recv_bytes=None,encoding='latin-1'):
+        a, serverRecv = self._initRecv(None,recv_bytes,encoding)
+        lenServerRecv = len(serverRecv)
+
+        if lenServerRecv < length:
+            self.buffer = ''
+            try:
+                serverRecv += super().recv(length - lenServerRecv, recv_bytes, encoding)
+            except Exception as e:
+                self._log(str(e), level=logging.ERROR)
+        else:
+            self.buffer = serverRecv[length:]
+            serverRecv = serverRecv[:length]
+
+        return serverRecv
+
+    def recvUntil(self, until = None, recv_bytes=None, encoding='latin-1'):
+        if not until:
+            until = self.prompt
+        if not until:
+            raise Exception("until (and your prompt parameter) is empty.", level=logging.ERROR)
+
+        until, serverRecv = self._initRecv(until,recv_bytes,encoding)
+
+        while until not in serverRecv:
+            recv = None
+            try:
+                recv = super().recv(recv_bytes=recv_bytes, encoding=encoding)
+            except Exception as e:
+                self._log(str(e), level=logging.ERROR)
+            if recv:
+                serverRecv += recv
+            else:
+                break
+
+        serverRecv = serverRecv.split(until)
+        self.buffer = serverRecv[1]
+        serverRecv = serverRecv[0] + until
+
+        return serverRecv
+
+    def recvUntilRegex(self, regex, recv_bytes=None):
+        regex, serverRecv = self._initRecv(regex,recv_bytes,encoding)
+        regex = re.compile(regex)
+
+        while not regex.search(serverRecv):
+            recv = None
+            try:
+                recv = super().recv(recv_bytes=recv_bytes)
+            except Exception as e:
+                self._log(str(e), level=logging.ERROR)
+            if recv:
+                serverRecv += recv
+            else:
+                break
+
+        end = regex.search(serverRecv).end()
+        self.buffer = serverRecv[end:]
+        serverRecv = serverRecv[:end]
+
+        return serverRecv
 
     def sendLine(self, msg = None):
         if not msg:
@@ -24,61 +111,3 @@ class Server(Core):
         if msg[-1] != '\n':
             msg += '\n'
         self.send(msg)
-
-    def _clean(self, msg, clean):
-        if type(clean) == int:
-            msg = msg[:-clean]
-        else:
-            if type(clean) != str:
-                clean = self.prompt
-            if msg.endswith(clean):
-                msg = msg[:-len(clean)].strip()
-        return msg
-
-    def recv(self, length, clean=None):
-        serverRecv = ''
-        try:
-            serverRecv = super().recv(length)
-        except Exception as e:
-            self._log(str(e), level=logging.ERROR)
-        if clean:
-            serverRecv = self._clean(serverRecv, clean)
-        return serverRecv
-
-    def recvUntil(self, until = None, clean = None):
-        if not until:
-            until = self.prompt
-        if not until:
-            self._log("until (and your prompt parameter) is empty.", level=logging.ERROR)
-            return None
-        serverRecv = ''
-        while until not in serverRecv:
-            recv = None
-            try:
-                recv = super().recv()
-            except Exception as e:
-                self._log(str(e), level=logging.ERROR)
-            if recv:
-                serverRecv += recv
-            else:
-                break
-        if clean:
-            serverRecv = self._clean(serverRecv, clean)
-        return serverRecv
-
-    def recvUntilRegex(self, regex, clean = None):
-        regex = re.compile(regex)
-        serverRecv = ''
-        while not regex.search(serverRecv):
-            recv = None
-            try:
-                recv = super().recv()
-            except Exception as e:
-                self._log(str(e), level=logging.ERROR)
-            if recv:
-                serverRecv += recv
-            else:
-                break
-        if clean:
-            serverRecv = self._clean(serverRecv, clean)
-        return serverRecv

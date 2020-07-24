@@ -38,7 +38,7 @@ class Core:
         self._logDisconnected()
         return res
 
-    def recv(self, length=None, recv_bytes = None):
+    def recv(self, length=None, recv_bytes = None, encoding='latin-1'):
         if not length:
             length = self.length_bytes
         if length < 1:
@@ -47,7 +47,7 @@ class Core:
         if recv_bytes is None:
             recv_bytes = self.recv_bytes 
         if not recv_bytes:
-            r = r.decode()
+            r = r.decode(encoding)
         self._log("Received - "+repr(r), level=logging.RECV)
         return r
 
